@@ -18,7 +18,7 @@ namespace ReadPropertyFromPath.JSON
 
         private static void ReadProperty<T>(T cust, string path)
         {
-            JObject obj = JObject.FromObject(cust);
+            var obj = JToken.FromObject(cust); 
             var pathArr = path.Split('.');
             var result= ReadProperty(obj, pathArr);
             Console.WriteLine(result);
@@ -26,7 +26,7 @@ namespace ReadPropertyFromPath.JSON
 
         }
 
-        private static string ReadProperty(JObject obj, string[] pathArr)
+        private static string ReadProperty(JToken token, string[] pathArr)
         {
             if(pathArr.Length == 0)
             {
@@ -34,13 +34,11 @@ namespace ReadPropertyFromPath.JSON
             }
             if (pathArr.Length==1)
             {
-                return obj.GetValue(pathArr[0]).ToString();
+                return token.Value<string>(pathArr[0]);
             }
             else
             {
-                var token = obj.GetValue(pathArr[0]);
-                
-                return ReadProperty(token.ToObject<JObject>(), pathArr.Skip(1).ToArray());
+               return ReadProperty(token.Value<JToken>(pathArr[0]), pathArr.Skip(1).ToArray());
             }
         }
     }
