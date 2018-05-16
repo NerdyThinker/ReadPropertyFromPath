@@ -1,49 +1,47 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ReadPropertyFromPath.Reflection
+namespace ReadPropertyFromPath.JSON
 {
     class Program
     {
         static void Main(string[] args)
         {
             var cust = new Customer() { Name = "c1", Address = new Address() { City = "Atlanta", State = "GA", Street = "123 XYz Rd", Zip = "32165" } };
-
             ReadProperty(cust, "Address.City");
-
         }
 
         private static void ReadProperty<T>(T cust, string path)
         {
+            JObject obj = JObject.FromObject(cust);
             var pathArr = path.Split('.');
-            Console.WriteLine(ReadProperty(cust, pathArr));
+            var result= ReadProperty(obj, pathArr);
+            Console.WriteLine(result);
             Console.ReadLine();
+
         }
 
-        private static string ReadProperty<T>(T cust, string[] pathArr)
+        private static string ReadProperty(JObject obj, string[] pathArr)
         {
-            if (pathArr.Length == 0)
+            if(pathArr.Length == 0)
             {
-                return "Error Parsing Path";
+                return "Error Finding the Property";
             }
-            var prop = pathArr[0];
-            var properties = cust.GetType().GetProperties();
-            var isFinalType = pathArr.Length == 1;
-
-            var property = properties?.Where(p => p.Name == prop ).FirstOrDefault();
-
-            if (property == null)
+            if (pathArr.Length==1)
             {
-                return $"Error Finding Property {prop}";
+                return obj.GetValue(pathArr[0]).ToString();
             }
-            var value = property.GetValue(cust);
-
-          var result= isFinalType?value.ToString(): ReadProperty(value, pathArr.Skip(1).ToArray());
-            return result;
-
+            else
+            {
+                var token = obj.GetValue(pathArr[0]);
+                
+                return ReadProperty(token.ToObject<JObject>(), pathArr.Skip(1).ToArray());
+            }
         }
     }
 
